@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose'
 
-import { Services } from './api'
-import { NotFoundError } from './errors/not-found-error'
+import { Services } from 'types'
+import { NotFoundError } from 'errors/not-found-error'
 
 export const createMongooseApi = (
   Model: ReturnType<typeof mongoose.model>,

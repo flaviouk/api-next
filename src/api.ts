@@ -1,39 +1,18 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import morgan from 'morgan'
+import { Status, Method } from 'simple-http-status'
 
-import { CustomError } from './errors/custom-error'
-import { Status } from 'simple-http-status'
-import { NotFoundError } from './errors/not-found-error'
+import { CustomError } from 'errors/custom-error'
+import { NotFoundError } from 'errors/not-found-error'
+import { Services, Hook } from 'types'
 
-enum Method {
-  POST = 'POST',
-  GET = 'GET',
-  PUT = 'PUT',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
-}
-
-export type Hook = (req: NextApiRequest) => Promise<NextApiRequest>
-
-export interface Services {
-  find?: (query) => Promise<any>
-
-  create?: (body) => Promise<any>
-
-  get?: (pk: string, query) => Promise<any>
-
-  update?: (pk: string, body, query) => Promise<any>
-
-  patch?: (pk: string, body, query) => Promise<any>
-
-  remove?: (pk: string) => Promise<any>
+interface Pk {
+  name?: string
+  cast?: (pk: string) => string
 }
 
 interface NextApiOptions extends Services {
-  pk?: {
-    name?: string
-    cast?: (pk: string) => string
-  }
+  pk?: Pk
   hooks?: {
     all?: Hook[]
     find?: Hook[]
@@ -49,12 +28,9 @@ const logger = morgan(
   ':method :url :status :res[content-length] - :response-time ms',
 )
 
-const getPk = (
-  pk: NextApiOptions['pk'],
-  query: NextApiRequest['query'],
-): string | null => {
+const getPk = (pk: Pk = {}, query: NextApiRequest['query']): string | null => {
   const queryValue = pk?.name ? query[pk?.name] : query?.id || query?.pk
-  const [value] = Array.isArray(queryValue) ? queryValue : [null]
+  const [value] = Array.isArray(queryValue) ? queryValue : [queryValue]
   return pk?.cast && value ? pk.cast(value!) : value
 }
 
@@ -69,7 +45,7 @@ export const createApi = (options: NextApiOptions) => async (
 
     const runHooks = async (hooks: Hook[]) => {
       for (let index = 0; index < hooks.length; index++) {
-        await hooks[index](req)
+        await hooks[index](req, res, () => {})
       }
     }
 
@@ -104,14 +80,14 @@ export const createApi = (options: NextApiOptions) => async (
       return res.status(Status.HTTP_200_OK).json(result)
     }
 
-    if (options.find && method === Method.GET) {
+    if (options.find && !pk && method === Method.GET) {
       const hooks = options.hooks?.find ?? []
       await runHooks([...allHooks, ...hooks])
       const result = await options.find(req.query)
       return res.status(Status.HTTP_200_OK).json(result)
     }
 
-    if (options.create && method === Method.POST) {
+    if (options.create && !pk && method === Method.POST) {
       const hooks = options.hooks?.create ?? []
       await runHooks([...allHooks, ...hooks])
       const result = await options.create(req.body)

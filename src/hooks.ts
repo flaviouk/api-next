@@ -1,23 +1,21 @@
 import { body, query, cookie, validationResult } from 'express-validator'
 
-import { Hook } from './api'
-import { DatabaseConnectionError } from './errors/database-connection-error'
-import { RequestValidationError } from './errors/request-validation-error'
-import { DatabaseConnection } from './types'
+import { DatabaseConnectionError } from 'errors/database-connection-error'
+import { RequestValidationError } from 'errors/request-validation-error'
+import { DatabaseConnection, Hook } from 'types'
 
-const cachedDb = {}
+const cachedDb: { [key: string]: boolean } = {}
 
 export const connectToDatabase = ({
   name,
   connect,
-}: DatabaseConnection): Hook => async (req) => {
+}: DatabaseConnection): Hook => async () => {
   try {
     if (!cachedDb[name]) {
       await connect()
 
       cachedDb[name] = true
     }
-    return req
   } catch (err) {
     throw new DatabaseConnectionError()
   }
@@ -35,11 +33,10 @@ type CreateValidators = (validators: Validators) => Validator[]
 
 export const validateRequest = (
   createValidators: CreateValidators,
-): Hook => async (req) => {
-  const noop = () => {}
+): Hook => async (req, res, next) => {
   const validators = createValidators({ body, query, cookie })
   for (let index = 0; index < validators.length; index++) {
-    await validators[index](req, noop, noop)
+    await validators[index](req, res, next)
   }
 
   const errors = validationResult(req)
@@ -47,5 +44,4 @@ export const validateRequest = (
   if (!errors.isEmpty()) {
     throw new RequestValidationError(errors.array())
   }
-  return req
 }
