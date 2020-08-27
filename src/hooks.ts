@@ -1,8 +1,8 @@
 import { body, query, cookie, validationResult } from 'express-validator'
 
-import { DatabaseConnectionError } from 'errors/database-connection-error'
-import { RequestValidationError } from 'errors/request-validation-error'
-import { DatabaseConnection, Hook } from 'types'
+import { DatabaseConnectionError } from './errors/database-connection-error'
+import { RequestValidationError } from './errors/request-validation-error'
+import { DatabaseConnection, Hook } from './types'
 
 const cachedDb: { [key: string]: boolean } = {}
 

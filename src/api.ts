@@ -2,9 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import morgan from 'morgan'
 import { Status, Method } from 'simple-http-status'
 
-import { CustomError } from 'errors/custom-error'
-import { NotFoundError } from 'errors/not-found-error'
-import { Services, Hook } from 'types'
+import { CustomError } from './errors/custom-error'
+import { NotFoundError } from './errors/not-found-error'
+import { Services, Hook } from './types'
 
 interface Pk {
   name?: string
