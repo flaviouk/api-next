@@ -1,11 +1,11 @@
 import { createMocks } from 'node-mocks-http'
 import { Status } from 'simple-http-status'
 
-import { createApi } from '../src'
+import { createService } from '../src'
 
-describe('[createApi/get]', () => {
+describe('[createService/get]', () => {
   test('Should be able to use default id in query', async () => {
-    const handler = createApi({
+    const handler = createService({
       get: async (pk) => ({
         message: `Your favorite animal is ${pk}`,
       }),
@@ -26,7 +26,7 @@ describe('[createApi/get]', () => {
     `)
   })
   test('Should be able to use default pk in query', async () => {
-    const handler = createApi({
+    const handler = createService({
       get: async (pk) => ({
         message: `Your favorite animal is ${pk}`,
       }),
@@ -48,7 +48,7 @@ describe('[createApi/get]', () => {
   })
 
   test('Should be able to use custom pk in query', async () => {
-    const handler = createApi({
+    const handler = createService({
       pk: {
         name: 'animal',
       },
@@ -73,7 +73,7 @@ describe('[createApi/get]', () => {
   })
 
   test('Should be able to use custom pk in query and cast it', async () => {
-    const handler = createApi({
+    const handler = createService({
       pk: {
         name: 'animal',
         cast: (pk) => `__${pk}__`,

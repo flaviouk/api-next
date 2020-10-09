@@ -1,7 +1,7 @@
 import * as hook from './hooks'
 export { hook }
 
-export * from './api'
+export * from 'services.ts'
 export * from './mongoose'
 export * from './types'
 export { BadRequestError } from './errors/bad-request-error'

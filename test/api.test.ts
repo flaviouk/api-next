@@ -1,7 +1,7 @@
 import { createMocks } from 'node-mocks-http'
 import { Status, Method } from 'simple-http-status'
 
-import { createApi } from '../src'
+import { createService } from '../src'
 
 const tests = [
   {},
@@ -34,7 +34,7 @@ const tests = [
 ]
 
 tests.map((services) => {
-  const handler = createApi(services)
+  const handler = createService(services)
   const allServices = [
     { name: 'find', reqOptions: { method: Method.GET } },
     { name: 'create', reqOptions: { method: Method.POST } },

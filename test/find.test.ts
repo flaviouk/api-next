@@ -1,11 +1,11 @@
 import { createMocks } from 'node-mocks-http'
 import { Status } from 'simple-http-status'
 
-import { createApi, ApiNextQuery } from '../src'
+import { createService, ApiNextQuery } from '../src'
 
-describe('[createApi/find]', () => {
+describe('[createService/find]', () => {
   test('Should be able to return all results', async () => {
-    const handler = createApi({
+    const handler = createService({
       find: async () => ['one', 'two'],
     })
     const { req, res } = createMocks({
@@ -26,7 +26,7 @@ describe('[createApi/find]', () => {
     interface MyQuery extends ApiNextQuery {
       filter: string
     }
-    const handler = createApi({
+    const handler = createService({
       find: async (query: MyQuery) =>
         ['one', 'two'].filter((item) => item.includes(query.filter)),
     })

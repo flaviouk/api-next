@@ -8,7 +8,7 @@ export interface DatabaseConnection {
 export type ApiNextQuery = NextApiRequest['query']
 export type ApiNextBody = NextApiRequest['body']
 
-export interface Services {
+export interface ServiceMethods {
   find?(query: ApiNextQuery): Promise<any>
   create?: (body: ApiNextBody) => Promise<any>
   get?: (pk: string, query: ApiNextQuery) => Promise<any>

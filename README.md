@@ -10,7 +10,7 @@ Hooks are just middlewares that run before each of the handlers.
 ```ts
 import getConfig from 'next/config'
 import * as mongoose from 'mongoose'
-import { createApi, hook, NotFoundError } from 'api-next'
+import { createService, hook, NotFoundError } from 'api-next'
 
 export interface PostAttrs {
   title: string
@@ -51,24 +51,26 @@ const config = getConfig()
 
 // Concept from Feathersjs: https://feathersjs.com/
 const hooks = {
-  all: [
-    hook.connectToDatabase({
-      name: 'posts-db',
-      connect: () =>
-        mongoose.connect(config.serverRuntimeConfig.MONGO_URI, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-          useCreateIndex: true,
-        }),
-    }),
-  ],
-  create: [validateBody],
-  update: [validateBody],
+  before: {
+    all: [
+      hook.connectToDatabase({
+        name: 'posts-db',
+        connect: () =>
+          mongoose.connect(config.serverRuntimeConfig.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            useCreateIndex: true,
+          }),
+      }),
+    ],
+    create: [validateBody],
+    update: [validateBody],
+  },
 }
 
 // All the keys are optional
 // Pick what you need
-export default createApi({
+export default createService({
   hooks,
   find: async () => Post.find(),
   create: async (body: PostAttrs) => Post.build(body),
@@ -93,11 +95,11 @@ export default createApi({
 ### Alternative
 
 ```ts
-import { createMongooseApi } from 'api-next'
+import { createMongooseService } from 'api-next'
 
-const { find, create, get, update, remove } = createMongooseApi(Post)
+const { find, create, get, update, remove } = createMongooseService(Post)
 
-export default createApi({
+export default createService({
   hooks,
   find,
   create,

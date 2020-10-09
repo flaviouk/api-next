@@ -1,26 +1,26 @@
 import * as mongoose from 'mongoose'
 
-import { Services } from './types'
+import { ServiceMethods } from './types'
 import { NotFoundError } from './errors/not-found-error'
 
-export const createMongooseApi = (
+export const createMongooseService = (
   Model: ReturnType<typeof mongoose.model>,
-): Services => ({
+): ServiceMethods => ({
   find: async () => Model.find(),
   create: async (body) => Model.create(body),
   get: async (pk) => Model.findById(pk),
   update: async (pk, body) => {
-    const post = await Model.findById(pk)
-    if (!post) throw new NotFoundError()
+    const data = await Model.findById(pk)
+    if (!data) throw new NotFoundError()
 
-    post.set(body)
-    await post.save()
-    return post
+    data.set(body)
+    await data.save()
+    return data
   },
   remove: async (pk) => {
-    const post = await Model.findById(pk)
-    if (!post) throw new NotFoundError()
-    await post.remove()
-    return { success: true }
+    const data = await Model.findById(pk)
+    if (!data) throw new NotFoundError()
+    await data.remove()
+    return { success: true, data }
   },
 })
