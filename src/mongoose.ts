@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose'
 import { ServiceMethods } from './types'
 import { NotFoundError } from './errors/not-found-error'
 
-export const createMongooseService = (
+export const createMongooseMethods = (
   Model: ReturnType<typeof mongoose.model>,
 ): ServiceMethods => ({
   find: async () => Model.find(),

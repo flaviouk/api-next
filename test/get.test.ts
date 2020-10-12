@@ -1,46 +1,43 @@
-import { createMocks } from 'node-mocks-http'
 import { Status } from 'simple-http-status'
 
-import { createService } from '../src'
+import { createService, testService } from '../src'
 
 describe('[createService/get]', () => {
   test('Should be able to use default id in query', async () => {
-    const handler = createService({
+    const service = createService({
       get: async (pk) => ({
         message: `Your favorite animal is ${pk}`,
       }),
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
       query: {
         id: 'cat',
       },
     })
-    await handler(req, res)
 
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Object {
         "message": "Your favorite animal is cat",
       }
     `)
   })
   test('Should be able to use default pk in query', async () => {
-    const handler = createService({
+    const service = createService({
       get: async (pk) => ({
         message: `Your favorite animal is ${pk}`,
       }),
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
       query: {
         pk: 'fish',
       },
     })
-    await handler(req, res)
 
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Object {
         "message": "Your favorite animal is fish",
       }
@@ -48,7 +45,7 @@ describe('[createService/get]', () => {
   })
 
   test('Should be able to use custom pk in query', async () => {
-    const handler = createService({
+    const service = createService({
       pk: {
         name: 'animal',
       },
@@ -56,16 +53,15 @@ describe('[createService/get]', () => {
         message: `Your favorite animal is ${pk}`,
       }),
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
       query: {
         animal: 'dog',
       },
     })
-    await handler(req, res)
 
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Object {
         "message": "Your favorite animal is dog",
       }
@@ -73,7 +69,7 @@ describe('[createService/get]', () => {
   })
 
   test('Should be able to use custom pk in query and cast it', async () => {
-    const handler = createService({
+    const service = createService({
       pk: {
         name: 'animal',
         cast: (pk) => `__${pk}__`,
@@ -82,16 +78,15 @@ describe('[createService/get]', () => {
         message: `Your favorite animal is ${pk}`,
       }),
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
       query: {
         animal: 'dog',
       },
     })
-    await handler(req, res)
 
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Object {
         "message": "Your favorite animal is __dog__",
       }

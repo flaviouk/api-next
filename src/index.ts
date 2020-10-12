@@ -1,7 +1,8 @@
 import * as hook from './hooks'
 export { hook }
 
-export * from 'services.ts'
+export { createService } from './services'
+export { testService } from './testing'
 export * from './mongoose'
 export * from './types'
 export { BadRequestError } from './errors/bad-request-error'

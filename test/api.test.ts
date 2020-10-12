@@ -1,7 +1,6 @@
-import { createMocks } from 'node-mocks-http'
 import { Status, Method } from 'simple-http-status'
 
-import { createService } from '../src'
+import { createService, testService } from '../src'
 
 const tests = [
   {},
@@ -64,20 +63,20 @@ tests.map((services) => {
       const isAvailable = availableServices.includes(service.name)
 
       return test(`is "${service.name}" available? ${isAvailable}`, async () => {
-        const { req, res } = createMocks(service.reqOptions)
-        await handler(req, res)
-
-        const statusCode = res._getStatusCode()
+        const { statusCode, data } = await testService(
+          handler,
+          service.reqOptions,
+        )
 
         if (isAvailable) {
           expect(statusCode).not.toBe(Status.HTTP_404_NOT_FOUND)
-          expect(JSON.parse(res._getData())).toEqual(
+          expect(data).toEqual(
             // @ts-ignore
             await services[service.name](),
           )
         } else {
           expect(statusCode).toBe(Status.HTTP_404_NOT_FOUND)
-          expect(JSON.parse(res._getData())).toEqual({
+          expect(data).toEqual({
             errors: [{ message: 'Not Found' }],
           })
         }

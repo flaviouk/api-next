@@ -1,20 +1,17 @@
-import { createMocks } from 'node-mocks-http'
 import { Status } from 'simple-http-status'
 
-import { createService, ApiNextQuery } from '../src'
+import { createService, ApiNextQuery, testService } from '../src'
 
 describe('[createService/find]', () => {
   test('Should be able to return all results', async () => {
-    const handler = createService({
+    const service = createService({
       find: async () => ['one', 'two'],
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
     })
-    await handler(req, res)
-
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Array [
         "one",
         "two",
@@ -26,21 +23,19 @@ describe('[createService/find]', () => {
     interface MyQuery extends ApiNextQuery {
       filter: string
     }
-    const handler = createService({
+    const service = createService({
       find: async (query: MyQuery) =>
         ['one', 'two'].filter((item) => item.includes(query.filter)),
     })
-    const { req, res } = createMocks({
+    const { statusCode, data } = await testService(service, {
       method: 'GET',
       query: {
         filter: 'one',
       },
     })
 
-    await handler(req, res)
-
-    expect(res._getStatusCode()).toBe(Status.HTTP_200_OK)
-    expect(JSON.parse(res._getData())).toMatchInlineSnapshot(`
+    expect(statusCode).toBe(Status.HTTP_200_OK)
+    expect(data).toMatchInlineSnapshot(`
       Array [
         "one",
       ]
