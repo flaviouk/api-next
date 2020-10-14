@@ -17,6 +17,7 @@ export const connectToDatabase = ({
       cachedDb[name] = true
     }
   } catch (err) {
+    console.error(err)
     throw new DatabaseConnectionError()
   }
 }

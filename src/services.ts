@@ -39,66 +39,6 @@ const getPk = (pk: Pk = {}, query: NextApiRequest['query']): string | null => {
   return pk?.cast && value ? pk.cast(value!) : value
 }
 
-const getStatusCode = (type: keyof ServiceMethods) => {
-  switch (type) {
-    case 'create':
-      return Status.HTTP_201_CREATED
-    default:
-      return Status.HTTP_200_OK
-  }
-}
-
-const runHandler = async (
-  type: keyof ServiceMethods,
-  options: ServiceOptions,
-  req: NextApiRequest,
-  pk: string,
-) => {
-  switch (type) {
-    case 'find':
-      return options.find!(req.query)
-    case 'create':
-      return options.create!(req.body)
-    case 'get':
-      return options.get!(pk, req.query)
-    case 'update':
-      return options.update!(pk, req.body, req.query)
-    case 'patch':
-      return options.patch!(pk, req.body, req.query)
-    case 'remove':
-      return options.remove!(pk)
-  }
-}
-
-const handleService = async (
-  type: keyof ServiceMethods,
-  options: ServiceOptions,
-  req: NextApiRequest,
-  res: NextApiResponse,
-) => {
-  const pk = getPk(options.pk, req.query)
-
-  const runHooks = async (hooks: Hook[]) => {
-    for (let index = 0; index < hooks.length; index++) {
-      await hooks[index](req, res, () => {})
-    }
-  }
-
-  const allBeforeHooks = options.hooks?.before?.all ?? []
-  const beforeHooks = options.hooks?.before?.[type] ?? []
-  await runHooks([...allBeforeHooks, ...beforeHooks])
-
-  const result = await runHandler(type, options, req, pk!)
-
-  const allAfterHooks = options.hooks?.after?.all ?? []
-  const afterHooks = options.hooks?.after?.[type] ?? []
-  await runHooks([...allAfterHooks, ...afterHooks])
-
-  const statusCode = getStatusCode(type)
-
-  return res.status(statusCode).json(result)
-}
-
 export const createService = (options: ServiceOptions) => async (
   req: NextApiRequest,
   res: NextApiResponse,
@@ -107,26 +47,98 @@ export const createService = (options: ServiceOptions) => async (
 
   try {
     const pk = getPk(options.pk, req.query)
-    const { method } = req
+    const method = req.method?.toUpperCase()
+
+    const runHooks = async (hooks: Hook[]) => {
+      for (let index = 0; index < hooks.length; index++) {
+        await hooks[index](req, res, () => {})
+      }
+    }
 
     switch (true) {
-      case options.get && pk && method === Method.GET:
-        return handleService('get', options, req, res)
+      case 'get' in options && pk && method === Method.GET: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.get ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
 
-      case options.update && pk && method === Method.PUT:
-        return handleService('update', options, req, res)
+        const result = await options.get!(pk!, req.query)
 
-      case options.patch && pk && method === Method.PATCH:
-        return handleService('patch', options, req, res)
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.get ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
 
-      case options.remove && pk && method === Method.DELETE:
-        return handleService('remove', options, req, res)
+        return res.status(Status.HTTP_200_OK).json(result)
+      }
 
-      case options.find && !pk && method === Method.GET:
-        return handleService('find', options, req, res)
+      case 'update' in options && pk && method === Method.PUT: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.update ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
 
-      case options.create && !pk && method === Method.POST:
-        return handleService('create', options, req, res)
+        const result = await options.update!(pk!, req.body, req.query)
+
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.update ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
+
+        return res.status(Status.HTTP_200_OK).json(result)
+      }
+
+      case 'patch' in options && pk && method === Method.PATCH: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.patch ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
+
+        const result = await options.patch!(pk!, req.body, req.query)
+
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.patch ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
+
+        return res.status(Status.HTTP_200_OK).json(result)
+      }
+
+      case 'remove' in options && pk && method === Method.DELETE: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.remove ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
+
+        const result = await options.remove!(pk!)
+
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.remove ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
+
+        return res.status(Status.HTTP_200_OK).json(result)
+      }
+
+      case 'find' in options && !pk && method === Method.GET: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.find ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
+
+        const result = await options.find!(req.query)
+
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.find ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
+
+        return res.status(Status.HTTP_200_OK).json(result)
+      }
+
+      case 'create' in options && !pk && method === Method.POST: {
+        const allBeforeHooks = options.hooks?.before?.all ?? []
+        const beforeHooks = options.hooks?.before?.create ?? []
+        await runHooks([...allBeforeHooks, ...beforeHooks])
+
+        const result = await options.create!(req.body)
+
+        const allAfterHooks = options.hooks?.after?.all ?? []
+        const afterHooks = options.hooks?.after?.create ?? []
+        await runHooks([...allAfterHooks, ...afterHooks])
+
+        return res.status(Status.HTTP_201_CREATED).json(result)
+      }
 
       default:
         throw new NotFoundError()

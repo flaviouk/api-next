@@ -6,11 +6,11 @@ import { NotFoundError } from './errors/not-found-error'
 export const createMongooseMethods = (
   Model: ReturnType<typeof mongoose.model>,
 ): ServiceMethods => ({
-  find: async () => Model.find(),
+  find: async (query) => Model.find(query),
   create: async (body) => Model.create(body),
-  get: async (pk) => Model.findById(pk),
-  update: async (pk, body) => {
-    const data = await Model.findById(pk)
+  get: async (pk, query) => Model.findOne({ _id: pk, ...query }),
+  update: async (pk, body, query) => {
+    const data = await Model.findOne({ _id: pk, ...query })
     if (!data) throw new NotFoundError()
 
     data.set(body)
