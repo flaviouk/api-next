@@ -33,7 +33,7 @@
     "@types/node": "14.6.0",
     "babel-jest": "26.3.0",
     "next": "9.5.2",
-    "husky": "4.2.5",
+    "husky": "6.0.0",
     "prettier": "2.0.5",
     "eslint-plugin-prettier": "3.1.4",
     "tsdx": "0.13.2",
