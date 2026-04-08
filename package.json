@@ -22,7 +22,7 @@
     "prepare": "tsdx build"
   },
   "dependencies": {
-    "express-validator": "6.6.1",
+    "express-validator": "6.15.0",
     "morgan": "1.10.0",
     "node-mocks-http": "1.8.1",
     "simple-http-status": "1.1.0"
